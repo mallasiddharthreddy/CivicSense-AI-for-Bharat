@@ -98,48 +98,6 @@ The AI doesn't classify after collection — it **prevents contaminated waste fr
 
 ---
 
-## 🚀 Local Development
-
-### Prerequisites
-- Python 3.12
-- AWS account with Bedrock Nova Pro access enabled (us-east-1)
-- Twilio account with WhatsApp Sandbox
-
-### Setup
-
-```bash
-git clone https://github.com/mallasiddharthreddy/CivicSense-AI-for-Bharat.git
-cd CivicSense-AI-for-Bharat
-pip install fastapi mangum boto3 twilio requests python-dotenv uvicorn
-```
-
-Create a `.env` file:
-```env
-TWILIO_SID=your_twilio_sid
-TWILIO_TOKEN=your_twilio_token
-TWILIO_NUMBER=whatsapp:+14155238886
-REGION=us-east-1
-S3_BUCKET=civicsense-waste-images
-COMMUNITY_ID=Legend_Chimes
-```
-
-Run locally:
-```bash
-uvicorn main:app --reload --port 8000
-```
-
-Use [ngrok](https://ngrok.com) to expose your local server and set the ngrok URL as your Twilio webhook.
-
-### Deploy to Lambda
-
-```bash
-zip -r deployment.zip . -x "*.git*" -x "venv/*" -x "__pycache__/*" -x "*.pyc" -x "templates/*"
-```
-
-Upload `deployment.zip` to AWS Lambda. Set handler to `main.handler`.
-
----
-
 ## 📁 Project Structure
 
 ```
@@ -161,6 +119,11 @@ CivicSense-AI-for-Bharat/
 ├── .gitignore
 └── README.md
 ```
+
+---
+
+### 🔒 Evaluation & Source Code
+This repository is made public strictly for evaluation by the AWS AI for Bharat Hackathon judging panel. Please use the Live Demo link above to test the fully deployed ecosystem. All rights to the core logic and architecture are reserved.
 
 ---
 
