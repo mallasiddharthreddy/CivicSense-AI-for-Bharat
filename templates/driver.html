@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CivicSense Driver</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #F3F4F6; }
+        .fade-in { animation: fadeIn 0.4s ease-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+        .modal-backdrop { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 50; align-items: flex-end; justify-content: center; }
+        .modal-backdrop.active { display: flex; }
+        .modal-sheet { transform: translateY(100%); transition: transform 0.3s ease-out; }
+        .modal-backdrop.active .modal-sheet { transform: translateY(0); }
+    </style>
+</head>
+<body class="pb-24 min-h-screen">
+
+    <!-- ROUTE INFO MODAL (placeholder) -->
+    <div id="modal-route" class="modal-backdrop" onclick="closeModal('modal-route')">
+        <div class="modal-sheet bg-white rounded-t-3xl w-full max-w-lg p-6" onclick="event.stopPropagation()">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5"></div>
+            <h2 class="font-bold text-lg text-gray-800 mb-4">📍 Today's Route</h2>
+            <div class="space-y-3">
+                <div class="flex items-center gap-3 p-3 bg-emerald-50 rounded-xl border border-emerald-100">
+                    <div class="w-8 h-8 bg-emerald-500 text-white rounded-full flex items-center justify-center text-sm font-bold">1</div>
+                    <div>
+                        <p class="font-semibold text-gray-800 text-sm">Villa 105 — Block A</p>
+                        <p class="text-xs text-gray-400">Confirmed · Dry Waste</p>
+                    </div>
+                    <span class="ml-auto text-xs bg-amber-100 text-amber-600 font-bold px-2 py-1 rounded-full">Pending</span>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 opacity-40">
+                    <div class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold">2</div>
+                    <div>
+                        <p class="font-semibold text-gray-800 text-sm">Villa 42 — Block B</p>
+                        <p class="text-xs text-gray-400">Awaiting confirmation</p>
+                    </div>
+                    <span class="ml-auto text-xs bg-gray-100 text-gray-400 font-bold px-2 py-1 rounded-full">Waiting</span>
+                </div>
+                <div class="flex items-center gap-3 p-3 bg-gray-50 rounded-xl border border-gray-100 opacity-40">
+                    <div class="w-8 h-8 bg-gray-300 text-white rounded-full flex items-center justify-center text-sm font-bold">3</div>
+                    <div>
+                        <p class="font-semibold text-gray-800 text-sm">Villa 78 — Block C</p>
+                        <p class="text-xs text-gray-400">Awaiting confirmation</p>
+                    </div>
+                    <span class="ml-auto text-xs bg-gray-100 text-gray-400 font-bold px-2 py-1 rounded-full">Waiting</span>
+                </div>
+            </div>
+            <p class="text-xs text-center text-gray-400 mt-4">Live GPS navigation coming in v2.0</p>
+            <button onclick="closeModal('modal-route')" class="mt-4 w-full bg-gray-900 text-white py-3 rounded-2xl font-semibold">Close</button>
+        </div>
+    </div>
+
+    <!-- SHIFT SUMMARY MODAL (placeholder) -->
+    <div id="modal-summary" class="modal-backdrop" onclick="closeModal('modal-summary')">
+        <div class="modal-sheet bg-white rounded-t-3xl w-full max-w-lg p-6" onclick="event.stopPropagation()">
+            <div class="w-10 h-1 bg-gray-200 rounded-full mx-auto mb-5"></div>
+            <h2 class="font-bold text-lg text-gray-800 mb-4">📊 Shift Summary</h2>
+            <div class="grid grid-cols-2 gap-3 mb-4">
+                <div class="bg-emerald-50 rounded-2xl p-4 text-center">
+                    <p class="text-2xl font-bold text-emerald-600" id="summary-kg">—</p>
+                    <p class="text-xs text-gray-500 mt-1">kg Collected</p>
+                </div>
+                <div class="bg-blue-50 rounded-2xl p-4 text-center">
+                    <p class="text-2xl font-bold text-blue-600" id="summary-stops">—</p>
+                    <p class="text-xs text-gray-500 mt-1">Stops Done</p>
+                </div>
+                <div class="bg-amber-50 rounded-2xl p-4 text-center">
+                    <p class="text-2xl font-bold text-amber-600" id="summary-pending">—</p>
+                    <p class="text-xs text-gray-500 mt-1">Pending</p>
+                </div>
+                <div class="bg-purple-50 rounded-2xl p-4 text-center">
+                    <p class="text-2xl font-bold text-purple-600" id="summary-co2">—</p>
+                    <p class="text-xs text-gray-500 mt-1">kg CO₂ Saved</p>
+                </div>
+            </div>
+            <p class="text-xs text-center text-gray-400">Data synced live from AWS DynamoDB</p>
+            <button onclick="closeModal('modal-summary')" class="mt-4 w-full bg-gray-900 text-white py-3 rounded-2xl font-semibold">Close</button>
+        </div>
+    </div>
+
+    <!-- HEADER -->
+    <div class="bg-emerald-600 px-6 pt-6 pb-8 shadow-lg rounded-b-3xl">
+        <div class="flex justify-between items-start text-white mb-5">
+            <div>
+                <p class="text-emerald-200 text-xs font-semibold uppercase tracking-widest">Saturday Route</p>
+                <h1 class="text-2xl font-bold mt-0.5">Legend Chimes</h1>
+                <p class="text-emerald-200 text-xs mt-1">Ravi K. &nbsp;·&nbsp; MH-12 RT 4421</p>
+            </div>
+            <button onclick="openModal('modal-route')" class="bg-white/20 hover:bg-white/30 transition-colors p-2.5 rounded-xl">
+                <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 17a2 2 0 11-4 0 2 2 0 014 0zM19 17a2 2 0 11-4 0 2 2 0 014 0z"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M13 16V6a1 1 0 00-1-1H4a1 1 0 00-1 1v3.283"/>
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16.5 13H19l2 2v4h-3M2 17h2"/>
+                </svg>
+            </button>
+        </div>
+
+        <!-- Stats strip -->
+        <div class="grid grid-cols-3 gap-2">
+            <div class="bg-white/15 rounded-2xl px-3 py-2.5 text-center">
+                <p class="text-white font-bold text-lg" id="stat-pending">—</p>
+                <p class="text-emerald-200 text-xs">Pending</p>
+            </div>
+            <div class="bg-white/15 rounded-2xl px-3 py-2.5 text-center">
+                <p class="text-white font-bold text-lg" id="stat-done">0</p>
+                <p class="text-emerald-200 text-xs">Done Today</p>
+            </div>
+            <div class="bg-white/15 rounded-2xl px-3 py-2.5 text-center">
+                <p class="text-white font-bold text-lg" id="stat-kg">0 kg</p>
+                <p class="text-emerald-200 text-xs">Collected</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- PICKUPS LIST -->
+    <div class="px-5 mt-6">
+        <div class="flex justify-between items-center mb-4">
+            <h2 class="text-gray-500 font-semibold text-sm uppercase tracking-wide">Pending Pickups</h2>
+            <button onclick="loadRoute()" class="text-xs text-emerald-600 font-bold bg-emerald-50 px-3 py-1.5 rounded-full hover:bg-emerald-100 transition-colors">↻ Refresh</button>
+        </div>
+
+        <div id="route-list" class="space-y-4">
+            <div class="text-center py-10 text-gray-400">Loading route data...</div>
+        </div>
+    </div>
+
+    <!-- BOTTOM BAR -->
+    <div class="fixed bottom-0 left-0 right-0 bg-white border-t border-gray-100 px-5 py-3 flex gap-3 shadow-lg">
+        <button onclick="openSummary()" class="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white py-3 rounded-2xl font-semibold text-sm transition-colors">
+            📊 Shift Summary
+        </button>
+        <button onclick="openModal('modal-route')" class="flex-1 bg-gray-100 hover:bg-gray-200 text-gray-700 py-3 rounded-2xl font-semibold text-sm transition-colors">
+            🗺️ View Route
+        </button>
+    </div>
+
+    <script>
+        const API_BASE_URL = "https://nemfxuz3f4.execute-api.us-east-1.amazonaws.com/default";
+
+        let doneCount = 0;
+        let collectedKg = 0;
+
+        function openModal(id) {
+            document.getElementById(id).classList.add('active');
+        }
+
+        function closeModal(id) {
+            document.getElementById(id).classList.remove('active');
+        }
+
+        function openSummary() {
+            document.getElementById('summary-kg').innerText = collectedKg.toFixed(1);
+            document.getElementById('summary-stops').innerText = doneCount;
+            document.getElementById('summary-pending').innerText = document.getElementById('stat-pending').innerText;
+            document.getElementById('summary-co2').innerText = (collectedKg * 1.5).toFixed(2);
+            openModal('modal-summary');
+        }
+
+        async function loadRoute() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/driver/route`);
+                const data = await response.json();
+                const container = document.getElementById('route-list');
+                container.innerHTML = '';
+
+                document.getElementById('stat-pending').innerText = data.length;
+
+                if (data.length === 0) {
+                    container.innerHTML = `
+                        <div class="flex flex-col items-center justify-center py-12 fade-in">
+                            <div class="bg-white w-20 h-20 rounded-full shadow-sm flex items-center justify-center mb-4">
+                                <svg class="w-10 h-10 text-emerald-500" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            </div>
+                            <h3 class="text-gray-800 font-bold text-lg">All caught up!</h3>
+                            <p class="text-gray-400 text-sm mt-1">No pending pickups for today.</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                data.forEach((stop, index) => {
+                    const card = document.createElement('div');
+                    card.className = 'bg-white p-5 rounded-2xl shadow-sm border border-gray-100 fade-in';
+                    card.id = `card-${stop.id}`;
+
+                    card.innerHTML = `
+                        <div class="flex justify-between items-start mb-3">
+                            <div class="flex items-center gap-3">
+                                <div class="w-10 h-10 bg-emerald-100 text-emerald-700 rounded-xl flex items-center justify-center font-bold text-sm">${index + 1}</div>
+                                <div>
+                                    <h3 class="text-xl font-bold text-gray-800">Villa ${stop.villa_number}</h3>
+                                    <p class="text-gray-400 text-xs">ID: #${stop.id.substring(0,8)}</p>
+                                </div>
+                            </div>
+                            <div class="flex flex-col items-end gap-1">
+                                <span class="bg-emerald-100 text-emerald-700 text-xs font-bold px-2 py-1 rounded-full">DRY WASTE</span>
+                                <div class="flex items-center gap-1 text-amber-500 text-xs font-semibold">
+                                    <div class="h-2 w-2 bg-amber-400 rounded-full animate-pulse"></div> Pending
+                                </div>
+                            </div>
+                        </div>
+
+                        <div id="action-area-${stop.id}">
+                            <label class="text-xs font-bold text-gray-400 uppercase tracking-wide">Weight Collected (kg)</label>
+                            <div class="flex gap-3 mt-2">
+                                <input type="number" id="weight-${stop.id}" placeholder="0.0" step="0.1" min="0"
+                                    class="w-full bg-gray-50 border border-gray-200 text-gray-800 text-lg font-bold rounded-xl px-4 py-3 focus:outline-none focus:ring-2 focus:ring-emerald-500 transition-all">
+                                <button onclick="confirmPickup('${stop.id}', '${stop.phone_number}')"
+                                    class="bg-gray-900 hover:bg-black text-white px-6 py-3 rounded-xl font-semibold active:scale-95 transition-all whitespace-nowrap">
+                                    ✓ Done
+                                </button>
+                            </div>
+                        </div>
+
+                        <div id="success-${stop.id}" class="hidden mt-3 bg-emerald-50 p-3 rounded-xl border border-emerald-100 flex items-center gap-2">
+                            <svg class="w-5 h-5 text-emerald-600 flex-shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path></svg>
+                            <span class="text-emerald-800 font-semibold text-sm">Collected! WhatsApp sent ✅</span>
+                        </div>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (e) {
+                console.error("Failed to load route:", e);
+                document.getElementById('route-list').innerHTML = `<div class="text-center py-10 text-red-400 text-sm">Failed to load. Check connection.</div>`;
+            }
+        }
+
+        async function confirmPickup(requestId, phoneNumber) {
+            const weightInput = document.getElementById(`weight-${requestId}`);
+            const weight = weightInput.value;
+
+            if (!weight || parseFloat(weight) <= 0) {
+                weightInput.classList.add('ring-2', 'ring-red-400');
+                setTimeout(() => weightInput.classList.remove('ring-2', 'ring-red-400'), 800);
+                return;
+            }
+
+            const btn = weightInput.nextElementSibling;
+            btn.innerHTML = `<svg class="animate-spin h-5 w-5 text-white mx-auto" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24"><circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle><path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"></path></svg>`;
+            btn.disabled = true;
+
+            try {
+                const response = await fetch(`${API_BASE_URL}/api/driver/confirm`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ request_id: requestId, phone_number: phoneNumber, weight: parseFloat(weight) })
+                });
+
+                if (response.ok) {
+                    const kg = parseFloat(weight);
+                    doneCount++;
+                    collectedKg += kg;
+                    document.getElementById('stat-done').innerText = doneCount;
+                    document.getElementById('stat-kg').innerText = collectedKg.toFixed(1) + ' kg';
+                    document.getElementById('stat-pending').innerText = Math.max(0, parseInt(document.getElementById('stat-pending').innerText) - 1);
+
+                    document.getElementById(`action-area-${requestId}`).style.display = 'none';
+                    document.getElementById(`success-${requestId}`).classList.remove('hidden');
+                } else {
+                    btn.innerHTML = '✓ Done';
+                    btn.disabled = false;
+                }
+            } catch (e) {
+                console.error(e);
+                btn.innerHTML = '✓ Done';
+                btn.disabled = false;
+            }
+        }
+
+        loadRoute();
+    </script>
+</body>
+</html>

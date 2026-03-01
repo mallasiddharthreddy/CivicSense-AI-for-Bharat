@@ -1,0 +1,75 @@
+# Environment
+.env
+*.env
+
+# Python cache
+__pycache__/
+*.py[cod]
+*.pyo
+*.pyc
+*.pyd
+
+# Virtual environments
+venv/
+env/
+ENV/
+
+# Deployment artifact
+deployment.zip
+*.zip
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# pip packages dumped in project root (all the installed libraries)
+aiohappyeyeballs*/
+aiohttp*/
+aiohttp_retry*/
+aiosignal*/
+annotated_doc*/
+annotated_types*/
+anyio*/
+attr/
+attrs*/
+bin/
+boto3*/
+botocore*/
+certifi*/
+charset_normalizer*/
+click*/
+dateutil/
+dotenv/
+fastapi*/
+frozenlist*/
+h11*/
+idna*/
+jmespath*/
+jwt/
+mangum*/
+multidict*/
+multipart/
+propcache*/
+pydantic*/
+pydantic_core*/
+pyjwt*/
+python_dateutil*/
+python_dotenv*/
+python_multipart*/
+pytz*/
+requests*/
+s3transfer*/
+starlette*/
+twilio*/
+typing_extensions*
+typing_inspection*/
+urllib3*/
+uvicorn*/
+yarl*/
+six.py
+six-*
+
+# Misc
+*.log
+*.tmp

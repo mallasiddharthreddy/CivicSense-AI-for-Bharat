@@ -60,6 +60,8 @@ By leveraging familiar WhatsApp technology and requiring no app installation, Ci
 
 ### Requirement 4: Gamification and Community Impact Tracking
 
+![Admin Dashboard](Diagrams/Admin-Dashboard_picture.png)
+
 **User Story:** As a community participant, I want to earn credits for properly segregated waste and see my community's collective environmental impact, so that I stay motivated to maintain good segregation practices.
 
 **Acceptance Criteria:**

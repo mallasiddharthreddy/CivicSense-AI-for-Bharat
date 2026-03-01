@@ -26,6 +26,8 @@ Community administrators access comprehensive analytics through a web dashboard 
 
 ## 3. End-to-End Workflow
 
+![CivicSense Process Flow](Diagrams/User_Flow_Diagram.png)
+
 ### Registration and Onboarding
 New Community Participants initiate contact by messaging the CivicSense WhatsApp number, providing their Villa Number. The system captures this information in DynamoDB without requiring complex registration processes.
 
@@ -108,6 +110,8 @@ AI verification utilizes Amazon Bedrock's Nova Pro model, reducing operational o
 Community dashboards and driver interfaces are hosted on scalable Amazon S3 static web hosting infrastructure.
 
 ## 9. AWS Architecture (As-Built Architecture)
+
+![CivicSense Fully Serverless AWS Architecture](Diagrams/AWS_Architecture_Diagram.png)
 
 This section describes the deployed AWS architecture supporting the pilot demonstration and community-scale deployment, emphasizing clarity, accessibility, and responsible AI use for public impact.
 
