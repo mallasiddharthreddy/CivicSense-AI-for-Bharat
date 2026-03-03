@@ -45,7 +45,7 @@ The AI doesn't classify after collection — it **prevents contaminated waste fr
 | Messaging interface | WhatsApp Business API via Twilio |
 | Ingestion | Amazon API Gateway (HTTP API v2) |
 | Core compute | AWS Lambda (Python 3.12, arm64, 30s timeout) |
-| AI quality gate | Amazon Bedrock — Nova Pro v1 (multimodal) |
+| AI quality gate | Amazon Bedrock — Nova Pro v1 (multimodal) , Fallback - Nova Lite v1 |
 | Database | Amazon DynamoDB — `CivicSense_Users` + `CivicSense_Pickups` |
 | Image storage | Amazon S3 — `civicsense-waste-images` (SSE-S3 encrypted, private) |
 | Frontend hosting | Amazon S3 static website |
