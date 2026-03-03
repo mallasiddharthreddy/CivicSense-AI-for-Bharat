@@ -162,8 +162,26 @@ Do not explain. Do not add punctuation. One word only."""
         else:
             return 'UNCLEAR'
     except Exception as e:
-        print(f"Bedrock/Nova Pro Error: {e}")
-        return 'VALID'  # Fail open for hackathon demo
+        print(f"Bedrock/Nova Pro Error: {e} — falling back to Nova Lite")
+        try:
+            response = bedrock.invoke_model(
+                body=body,
+                modelId="amazon.nova-lite-v1:0",
+                accept="application/json",
+                contentType="application/json"
+            )
+            response_body = json.loads(response.get('body').read())
+            answer = response_body['output']['message']['content'][0]['text'].strip().upper()
+            print(f"Nova Lite fallback result: {answer}")
+            if "INVALID" in answer:
+                return 'INVALID'
+            elif "VALID" in answer:
+                return 'VALID'
+            else:
+                return 'UNCLEAR'
+        except Exception as e2:
+            print(f"Nova Lite fallback also failed: {e2}")
+            return 'UNCLEAR'  # Safe fallback — ask user to resubmit
 
 
 # --- 1. WHATSAPP BOT ENDPOINT ---
